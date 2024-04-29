@@ -1,0 +1,8 @@
+versionid = "07"
+tenantid = "78292741-a832-459a-ac25-8e896e24a86c"
+resource_group_name = "aabeckAzureIA"
+workspace_name = "mlwspaceaabeck07"
+appinsights_id = "mlwspaceaabeckai07"
+kvault_id = "mlwspaceaabeckkv07"
+saccount_id = "mlwspaceaabecksa07"
+containerregitry_id = "mlsspaceaabeckcr07"
