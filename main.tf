@@ -22,6 +22,11 @@ provider "azapi" {}
 data "azurerm_client_config" "current" {}
 
 
+data "azurerm_resource_group" "aabeck01" {
+  name = var.resource_group_name
+}
+
+
 resource "azurerm_monitor_action_group" "aabeck01" {
   name                = "Application Insights Smart Detection"
   resource_group_name = var.resource_group_name
@@ -73,6 +78,33 @@ resource "azurerm_key_vault" "aabeck01" {
 }
 
 
+resource "azurerm_storage_account" "aabeck01" {
+  name                     = var.saccount_id
+  location                 = var.resource_group_location
+  resource_group_name      = var.resource_group_name
+  account_tier             = "Standard"
+  account_replication_type = "GRS"
+  public_network_access_enabled = true
+
+  tags = {
+    Environment = "development"
+  }
+}
+
+
+resource "azurerm_container_registry" "aabeck01" {
+  name                = var.containerregitry_id
+  resource_group_name = var.resource_group_name
+  location            = var.resource_group_location
+  sku                 = "Premium"
+  admin_enabled       = true
+
+  tags = {
+    Environment = "development"
+  }
+}
+
+
 resource "azurerm_key_vault_access_policy" "aabeck01-identity" {
   key_vault_id = azurerm_key_vault.aabeck01.id
   tenant_id    = data.azurerm_client_config.current.tenant_id
@@ -116,30 +148,22 @@ resource "azurerm_key_vault_access_policy" "aabeck01-tenant" {
 }
 
 
-resource "azurerm_storage_account" "aabeck01" {
-  name                     = var.saccount_id
-  location                 = var.resource_group_location
-  resource_group_name      = var.resource_group_name
-  account_tier             = "Standard"
-  account_replication_type = "GRS"
-  public_network_access_enabled = true
-
-  tags = {
-    Environment = "development"
-  }
+data "azuread_service_principal" "aabeck01" {
+  display_name = "Azure Machine Learning"
 }
 
+resource "azurerm_key_vault_access_policy" "aabeck01-app" {
+  key_vault_id = azurerm_key_vault.aabeck01.id
+  tenant_id    = data.azurerm_client_config.current.tenant_id
+  object_id    = data.azuread_service_principal.aabeck01.object_id
 
-resource "azurerm_container_registry" "aabeck01" {
-  name                = var.containerregitry_id
-  resource_group_name = var.resource_group_name
-  location            = var.resource_group_location
-  sku                 = "Premium"
-  admin_enabled       = true
-
-  tags = {
-    Environment = "development"
-  }
+  key_permissions = [
+    "Get",
+    "Recover",
+    "UnwrapKey",
+    "WrapKey",
+  ]
+  depends_on = [data.azuread_service_principal.aabeck01, data.azurerm_client_config.current]
 }
 
 
@@ -181,6 +205,12 @@ resource "azurerm_role_assignment" "aabeck01-role6" {
 
 resource "azurerm_role_assignment" "aabeck01-role7" {
   scope                = azurerm_monitor_action_group.aabeck01.id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_user_assigned_identity.aabeck01.principal_id
+}
+
+resource "azurerm_role_assignment" "aabeck01-role8" {
+  scope                = data.azurerm_resource_group.aabeck01.id
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.aabeck01.principal_id
 }
