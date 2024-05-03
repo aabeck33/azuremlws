@@ -12,10 +12,6 @@ Depois segui os passos para a criação do Job automatizado e, então, o deploy 
 
     ![alt text](objetos_criados.png)
 
-2. O AutomatedML:
-
-    ![alt text](automated_ml.png)
-
 3. O modelo treinado:
 
     ![alt text](modelo.png)
